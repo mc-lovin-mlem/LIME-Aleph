@@ -4,25 +4,26 @@ from skimage.util import img_as_float32
 from skimage import io
 from skimage.draw import circle
 from skimage.transform import resize
-from sklearn import preprocessing
 import matplotlib.pyplot as plt
 import argparse
 import numpy as np
-import keras
-from keras.preprocessing import image as imagepkg
-from keras.preprocessing.image import load_img
-from keras.preprocessing.image import img_to_array
-from keras.callbacks import ModelCheckpoint
-from keras.preprocessing.image import ImageDataGenerator
-from keras import optimizers
-from models import own_rel
+from tensorflow import keras
+from tensorflow.keras.preprocessing import image as imagepkg
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import optimizers
+from train_model import own_rel
 import webcolors
-import sys
 from lime import lime_image
-from wrappers.scikit_image import SegmentationAlgorithm
+import os, sys, inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from sources.own_segmentation.scikit_image import SegmentationAlgorithm
 from skimage.io import imshow, show, imsave
 import copy
-from lime import lime_image
 import time
 import xml.etree.ElementTree as ET
 import webbrowser
@@ -34,22 +35,22 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", default="cat.png", help="Path to the image.")
 ap.add_argument("-s", "--samples", required=False, default=1000, help="Number of samples for LIME.")
 ap.add_argument("-f", "--features", required=False, default=3, help="Number of features to show in LIME result.")
-ap.add_argument("-c", "--checkpoint_dir", required=False, default="current_and_archive/best_model_artificial.h5", help="Path to checkpoint.")
+ap.add_argument("-c", "--checkpoint_dir", required=False, default="../models_to_explain/model.h5", help="Path to checkpoint.")
 args = vars(ap.parse_args())
 
-IMAGE_SIZE = own_rel.image_size # TODO change back!!!!!!
+IMAGE_SIZE = own_rel.IMAGE_SIZE
 NUM_SAMPLES_LIME = int(args['samples'])
 NUM_FEATURES_TO_SHOW_LIME = int(args['features'])
-checkpoint_dir = str(args['checkpoint_dir'])
+CHECKPOINT_DIR = str(args['checkpoint_dir'])
 RANDOM_SEED = 42
 
-np.set_printoptions(threshold=np.nan)
+OUTPUTS_PATH = "../outputs/outputs_lime/"
 
 #import model
 model = own_rel.own_rel()
 
 #load weights from checkpoint
-model.load_weights(checkpoint_dir)
+model.load_weights(CHECKPOINT_DIR)
 
 #compile model (required to make predictions)
 #model.compile(loss = 'binary_crossentropy',
@@ -63,15 +64,14 @@ def predict_fn(images):
     return preds
 
 """
-The following two code blocks are from the stackoverflow post
+The following two functions are from the stackoverflow post
 'https://stackoverflow.com/questions/9694165/convert-rgb-color-to-english-color-name-like-green-with-python'
 It is therefore under the CC-BY-SA License: https://creativecommons.org/licenses/by-sa/2.0/legalcode
 The author is 'fraxel'
 """
-
 def closest_colour(requested_colour):
     min_colours = {}
-    for key, name in webcolors.css3_hex_to_names.items():
+    for key, name in webcolors.CSS3_HEX_TO_NAMES.items():
         r_c, g_c, b_c = webcolors.hex_to_rgb(key)
         rd = (r_c - requested_colour[0]) ** 2
         gd = (g_c - requested_colour[1]) ** 2
@@ -98,7 +98,7 @@ image = img_as_float32(io.imread(args["image"]))
 
 #resize image to match network default size
 image = resize(image, (IMAGE_SIZE, IMAGE_SIZE), anti_aliasing=True)
-io.imsave("reference_image.png", image)
+io.imsave(OUTPUTS_PATH + "reference_image.png", image) # save the original as reference image
 
 true_class = -1
 
@@ -107,9 +107,12 @@ predictions = np.squeeze(predictions) #to get rid of the third dimension
 true_class = np.argmax(predictions)
 print("True class: ", true_class)
 
+# the softmax output for the two classes:
 print("Negative estimator:", predictions[0])
 print("Positive estimator:", predictions[1])
 
+
+# here, we start to create an xml annotation file
 root = ET.Element("image")
 root.set("true-class", str(true_class))
 tree = ET.ElementTree(root)
@@ -127,7 +130,7 @@ print("Elapsed time: " + str(time.time() - tmp))
 lime_output, lime_mask = explanation.get_image_and_mask(true_class, positive_only=True, num_features=NUM_FEATURES_TO_SHOW_LIME, hide_rest=True)
 io.imshow(lime_output)
 io.show()
-io.imsave("lime_output.png", mark_boundaries(lime_output, lime_mask))
+io.imsave(OUTPUTS_PATH + "lime_output.png", mark_boundaries(lime_output, lime_mask))
 
 # Beware: Only applicable to binary tasks
 counter_class = -1
@@ -137,18 +140,18 @@ else:
 	counter_class = 0
 
 lime_output_counter, lime_mask_counter = explanation.get_image_and_mask(counter_class, positive_only=True, num_features=NUM_FEATURES_TO_SHOW_LIME, hide_rest=True)
-io.imsave("lime_output_counter.png", mark_boundaries(lime_output_counter, lime_mask_counter))
+io.imsave(OUTPUTS_PATH + "lime_output_counter.png", mark_boundaries(lime_output_counter, lime_mask_counter))
 
 top_class_weights = explanation.local_exp[true_class]
-print("Top Class Weights:", top_class_weights)
+#print("Top Class Weights:", top_class_weights)
 segments = explanation.segments
 
 print("Number of superpixels: " + str(len(top_class_weights)))
 
 for f,w in top_class_weights:
-
     #Print weights
     print("Weight of sp: ", f, "is: ", w)
+
 	# get the size of a superpixel
     sp_size_in_pixels = len(segments[segments == f])
 	
@@ -166,10 +169,6 @@ for f,w in top_class_weights:
     x = (np.max(occurrences[0]) + np.min(occurrences[0]))/2.0
     y = (np.max(occurrences[1]) + np.min(occurrences[1]))/2.0
 	
-	# draw circle
-    #rr, cc = circle(x, y, 5)
-    #post_lime_segmented_image[rr, cc] = (0.8, 0.8, 0.8)
-	
 	# add to the xml
     sp_element = ET.SubElement(root, 'superpixel')
     sp_element.set('id', 'sp_' + str(f))
@@ -179,12 +178,7 @@ for f,w in top_class_weights:
     sp_element.set('lime-weight', str(w))
     sp_element.set('coord-x', str(x))
     sp_element.set('coord-y', str(y))
-    tree.write("annotation.xml")
+    tree.write(OUTPUTS_PATH + "annotation.xml")
 
 # save sp integer mask
-np.save("sp_mask.npy", segments)
-
-#io.imsave("segmented_image.png", post_lime_segmented_image)
-
-#url = "namesaker.html"
-#webbrowser.open(url)
+np.save(OUTPUTS_PATH + "sp_mask.npy", segments)
