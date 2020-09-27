@@ -8,58 +8,58 @@ import argparse
 import numpy as np
 import sys
 from lime import lime_image
-#import vgg
-from generators import own_rel
+from train_model import own_rel
 from skimage.io import imshow, show, imsave, imread
 from xml.etree.ElementTree import parse
 import copy
 import os
-import keras
-from keras.preprocessing import image
-from keras.applications.vgg16 import preprocess_input
-from keras.callbacks import ModelCheckpoint
-from keras.preprocessing.image import ImageDataGenerator
-from keras.preprocessing.image import load_img
-from keras import optimizers
+import tensorflow.keras
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.vgg16 import preprocess_input
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras import optimizers
 from skimage.segmentation import mark_boundaries
 import shutil
 
-np.set_printoptions(threshold=np.nan)
+#np.set_printoptions(threshold=np.nan)
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-a", "--annotation_file", required=False,
-                default="annotation.xml", help="Path to the annotation file.")
+                default="../outputs/outputs_lime/annotation.xml", help="Path to the annotation file.")
 ap.add_argument("-s", "--samples", required=False, default=20,
                 help="The number of perturbed training examples for Aleph.")
 ap.add_argument("-c", "--checkpoint_dir", required=False,
-                default="current_and_archive/best_model_artificial.h5", help="Path to checkpoint.")
+                default="../models_to_explain/model.h5", help="Path to checkpoint.")
 ap.add_argument("-k", "--keep", required=False,
                 default=4, help="Number of important superpixels.")
 ap.add_argument("-t", "--theta", required=False,
                 default=0.9, help="The threshold of the classifier estimator for being a true example.")
 ap.add_argument("-n", "--noise", required=False,
-                default=10, help="Percentage of false positives allowed for Aleph")
+                default=10, help="Percentage of false positives allowed for Aleph.")
 args = vars(ap.parse_args())
 
-IMAGE_SIZE = own_rel.image_size
+IMAGE_SIZE = own_rel.IMAGE_SIZE
 NUM_SAMPLES_LIME_ALEPH = int(args['samples'])
 BATCH_SIZE = 10
 ANNOTATION_FILE = args['annotation_file']
 N_KEEP = int(args['keep'])
-THRESHOLD_TRUE_CLASS = float(args['theta'])  # TODO subject to so many changes
+THRESHOLD_TRUE_CLASS = float(args['theta'])
 CHECKPOINT_DIR = str(args['checkpoint_dir'])
 NOISE = int(args['noise'])
 
 
 # clear all perturbed examples
+OUTPUTS_PATH = "../outputs/outputs_aleph/"
+shutil.rmtree(OUTPUTS_PATH, ignore_errors=True)
+os.makedirs(OUTPUTS_PATH + 'perturbed/')
+os.makedirs(OUTPUTS_PATH + 'aleph_files/')
 
-shutil.rmtree('perturbed/')
-os.makedirs('perturbed/')
-
-
-aleph_b = open('sp.b', 'w')
-aleph_f = open('sp.f', 'w')
-aleph_n = open('sp.n', 'w')
-aleph_bk = open('sp.bk', 'w')
+aleph_b = open(OUTPUTS_PATH + 'aleph_files/sp.b', 'w')
+aleph_f = open(OUTPUTS_PATH + 'aleph_files/sp.f', 'w')
+aleph_n = open(OUTPUTS_PATH + 'aleph_files/sp.n', 'w')
+aleph_bk = open(OUTPUTS_PATH + 'aleph_files/sp.bk', 'w')
 
 
 class Relation:
@@ -146,10 +146,10 @@ def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, 
     p = preds[0]
     if p[true_class] >= THRESHOLD_TRUE_CLASS:
         aleph_f.write("true_class(example_" + str(example_index) + ").\n")
-        io.imsave("perturbed/example_" + str(example_index) + "_pos.png", image)
+        io.imsave(OUTPUTS_PATH + "perturbed/example_" + str(example_index) + "_pos.png", image)
     else:  # TODO could be better to see if threshold for counterclass is exceeded
         aleph_n.write("true_class(example_" + str(example_index) + ").\n")
-        io.imsave("perturbed/example_" + str(example_index) + "_neg.png", image)
+        io.imsave(OUTPUTS_PATH + "perturbed/example_" + str(example_index) + "_neg.png", image)
 
     rels_between_imp_sps = []
     for isp in important_superpixels:  # get all relations
@@ -186,10 +186,10 @@ def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, 
         p = preds[0]
         if p[true_class] >= THRESHOLD_TRUE_CLASS:
             aleph_f.write("true_class(example_" + str(example_index) + ").\n")
-            io.imsave("perturbed/example_" + str(example_index) + "_pos.png", tmp)
+            io.imsave(OUTPUTS_PATH + "perturbed/example_" + str(example_index) + "_pos.png", tmp)
         else:  # TODO could be better to see if threshold for counterclass is exceeded
             aleph_n.write("true_class(example_" + str(example_index) + ").\n")
-            io.imsave("perturbed/example_" + str(example_index) + "_neg.png", tmp)
+            io.imsave(OUTPUTS_PATH + "perturbed/example_" + str(example_index) + "_neg.png", tmp)
 
         # write changed relations into bk
         changed_relations = copy.deepcopy(rels_between_imp_sps)
@@ -210,78 +210,6 @@ def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, 
                        str(crel_to) + ", example_" + str(example_index) + ").\n")
 
 
-"""
-def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, true_class):
-
-    example_index = 0
-    for ex in range(NUM_SAMPLES_LIME_ALEPH):
-        # choose one random important superpixel
-        rand = np.random.randint(len(important_superpixels))
-        rand_imp_sp = important_superpixels[rand]
-        imp_sp_id = int(rand_imp_sp.identifier[3:])
-        print("ID of important superpixel", imp_sp_id)
-        for rel in rand_imp_sp.relations:
-            tmp = copy.deepcopy(image)
-            rel_name = rel.name
-            rel_to = int(rel.to[3:])
-
-            print("Relation name", rel_name)
-            print("Relation to superpixel with ID", rel_to)
-
-            example_index += 1
-            print("Example", example_index)
-
-            # first, write contains information for all superpixels
-            for sp in all_superpixels:
-                aleph_bk.write("contains(example_" + str(example_index) +
-                               ", " + str(sp.identifier) + ").\n")
-
-            for isp in important_superpixels:  # write all unchanged relations to background knowledge for this example
-                for irel in isp.relations:
-                    aleph_bk.write(irel.name + "_in_ex" + "(" + str(isp.identifier) +
-                                   ", " + str(irel.to) + ", example_" + str(example_index) + ").\n")
-
-            preds = predict_fn(np.array([tmp]))
-            p = preds[0]
-            if p[true_class] >= THRESHOLD_TRUE_CLASS:
-                aleph_f.write("true_class(example_" + str(example_index) + ").\n")
-                io.imsave("perturbed/example_" + str(example_index) + "_pos.png", tmp)
-            else:  # TODO could be better to see if threshold for counterclass is exceeded
-                aleph_n.write("true_class(example_" + str(example_index) + ").\n")
-                io.imsave("perturbed/example_" + str(example_index) + "_neg.png", tmp)
-
-            example_index += 1
-            print("Example", example_index)
-            # now flip superpixels
-            rr1, cc1 = np.where(mask == imp_sp_id)
-            rr2, cc2 = np.where(mask == rel_to)
-            values1 = tmp[rr1, cc1]
-            values2 = tmp[rr2, cc2]
-            tmp[rr2, cc2] = values1
-            tmp[rr1, cc1] = values2
-
-            # and write relation bk + example
-            for isp in important_superpixels:  # write all unchanged relations to background knowledge for this example
-                for irel in isp.relations:
-                    if (isp.identifier == rand_imp_sp.identifier and irel.to == rel.to):  # changed relation reached
-                        aleph_bk.write(rel_name + "_in_ex" + "(" + str(irel.to) + ", " +
-                                       str(isp.identifier) + ", example_" + str(example_index) + ").\n")
-                    elif (isp.identifier == rel.to and irel.to == rand_imp_sp.identifier):
-                        aleph_bk.write(rel_name + "_in_ex" + "(" + str(isp.identifier) +
-                                       ", " + str(irel.to) + ", example_" + str(example_index) + ").\n")
-                    else:
-                        aleph_bk.write(irel.name + "_in_ex" + "(" + str(isp.identifier) +
-                                       ", " + str(irel.to) + ", example_" + str(example_index) + ").\n")
-
-            preds = predict_fn(np.array([tmp]))
-            p = preds[0]
-            if p[true_class] >= THRESHOLD_TRUE_CLASS:
-                aleph_f.write("true_class(example_" + str(example_index) + ").\n")
-                io.imsave("perturbed/example_" + str(example_index) + "_pos.png", tmp)
-            else:  # TODO could be better to see if threshold for counterclass is exceeded
-                aleph_n.write("true_class(example_" + str(example_index) + ").\n")
-                io.imsave("perturbed/example_" + str(example_index) + "_neg.png", tmp)
-"""
 
 """
 This function is an adaption of a function from 'https://github.com/marcotcr/lime'.
@@ -370,7 +298,7 @@ def data_labels(image, fudged_image, segments, true_class, dissims_single):
 # START OF SCRIPT #
 ###################
 # load mask from previous step
-mask = np.load("sp_mask.npy")
+mask = np.load("../outputs/outputs_lime/sp_mask.npy")
 
 print(mask)
 n_superpixels = np.unique(mask).shape[0]
@@ -499,75 +427,6 @@ for partner in important_superpixels:
                 rel.to = partner.identifier
                 reference.relations.append(rel)
 
-"""
-# generate automatic relations
-for partner in important_superpixels:
-    touches_relations = set()
-    print("Currently at superpixel", partner.identifier)
-    for reference in important_superpixels:
-        if reference.identifier == partner.identifier:
-            continue
-        
-        reference_x = reference.coord_x
-        reference_y = reference.coord_y
-        partner_x = partner.coord_x
-        partner_y = partner.coord_y
-        
-        partner_occ = partner.occurrences
-        print("Occurrences:", partner_occ)
-        
-        # does superpixel touch other superpixel(s)?
-        for i,j in zip(partner_occ[0], partner_occ[1]): # i contains the ROW coordinate, j contains the COLUMN coordinate
-            for m in range(j-1, j+2): # check 3x3 neighbourhood of pixel
-                for n in range(i-1, i+2):
-                    if m < 0 or m >= 28: # dont take pixels into account that are out of the picture
-                        continue
-                    if n < 0 or n >= 28:
-                        continue
-                    if mask[n][m] == int(reference.identifier[3:]): # if other reference found in superpixel mask, add the other id to the set
-                        touches_relations.add(reference.identifier)
-                        print("ACTION<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-        
-        
-        # top_of
-        if reference_y < partner_y:
-            if (reference_x <= (partner_x + (partner_y - reference_y))) and (reference_x > (partner_x - (partner_y - reference_y))):
-                rel = Relation()
-                rel.name = 'top_of'
-                rel.to = partner.identifier
-                reference.relations.append(rel)
-        
-        # bottom_of
-        if reference_y > partner_y:
-            if (reference_x >= (partner_x - (reference_y - partner_y))) and (reference_x < (partner_x + (reference_y - partner_y))):
-                rel = Relation()
-                rel.name = 'bottom_of'
-                rel.to = partner.identifier
-                reference.relations.append(rel)
-
-        # left_of
-        if reference_x < partner_x:
-            if (reference_y >= (partner_y - (partner_x - reference_x))) and (reference_y < (partner_y + (partner_x - reference_x))):
-                rel = Relation()
-                rel.name = 'left_of'
-                rel.to = partner.identifier
-                reference.relations.append(rel)
-        
-        # right_of
-        if reference_x > partner_x:
-            if (reference_y <= (partner_y + (reference_x - partner_x))) and (reference_y > (partner_y - (reference_x - partner_x))):
-                rel = Relation()
-                rel.name = 'right_of'
-                rel.to = partner.identifier
-                reference.relations.append(rel)
-    
-    for tr in touches_relations: # write touches relations in list of relations
-        rel = Relation()
-        rel.name = 'touches'
-        rel.to = tr
-        partner.relations.append(rel)
-"""
-
 ### generate aleph ###
 
 aleph_b.write(":- use_module(library(lists)).\n")
@@ -648,8 +507,10 @@ aleph_b.write(":- set(nodes, 10000).\n")
 aleph_b.write(":- consult(\'sp.bk\').\n")
 
 # load in original image
-image = imread("reference_image.png", dtype=np.float32)
+image = imread("../outputs/outputs_lime/reference_image.png").astype('float32',casting='same_kind')
 image /= 255.0
+
+print(image)
 
 # write the types
 for n in unique_names:
@@ -694,45 +555,3 @@ aleph_b.close()
 aleph_f.close()
 aleph_n.close()
 aleph_bk.close()
-
-
-"""
-data, labels, dissims = data_labels(image, fudged_image, mask, true_class, dissims_single)
-
-print (dissims)
-
-class Example:
-    pass
-
-examples = []
-
-for i in range(len(labels)):
-    example = Example()
-    example.superpixel_mask = data[i]
-    example.label = labels[i]
-    example.dissim = dissims[i]
-    examples.append(example)
-
-examples.sort(key=lambda x: x.dissim, reverse=True)
-
-print (len(examples))
-
-example_index = 1
-f = open("alpeh_log.log","w+")
-for e in examples:
-    print ("#####")
-    print ("Example: " + str(example_index))
-    f.write("Example: " + str(example_index) + "\n")
-    print ("Superpixel mask: " + str(e.superpixel_mask))
-    f.write("Superpixel mask: " + str(e.superpixel_mask) + "\n")
-    print ("Label: " + str(e.label))
-    f.write("Label: " + str(e.label) + "\n")
-    print ("Dissim: " + str(e.dissim))
-    f.write("Dissim: " + str(e.dissim) + "\n")
-    print ("#####")
-    
-    write_example(example_index, e.superpixel_mask, e.label, e.dissim)
-    example_index += 1
-
-f.close()
-"""

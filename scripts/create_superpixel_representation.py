@@ -28,6 +28,7 @@ import time
 import xml.etree.ElementTree as ET
 import webbrowser
 import os
+import shutil
 
 
 ap = argparse.ArgumentParser()
@@ -45,8 +46,8 @@ CHECKPOINT_DIR = str(args['checkpoint_dir'])
 RANDOM_SEED = 42
 
 OUTPUTS_PATH = "../outputs/outputs_lime/"
-if not os.path.exists(OUTPUTS_PATH):
-    os.makedirs(OUTPUTS_PATH)
+shutil.rmtree(OUTPUTS_PATH, ignore_errors=True)
+os.makedirs(OUTPUTS_PATH)
 
 #import model
 model = own_rel.own_rel()
