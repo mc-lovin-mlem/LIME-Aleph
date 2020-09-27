@@ -45,6 +45,8 @@ CHECKPOINT_DIR = str(args['checkpoint_dir'])
 RANDOM_SEED = 42
 
 OUTPUTS_PATH = "../outputs/outputs_lime/"
+if not os.path.exists(OUTPUTS_PATH):
+    os.makedirs(OUTPUTS_PATH)
 
 #import model
 model = own_rel.own_rel()
