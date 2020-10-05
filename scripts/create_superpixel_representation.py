@@ -55,11 +55,6 @@ model = own_rel.own_rel()
 #load weights from checkpoint
 model.load_weights(CHECKPOINT_DIR)
 
-#compile model (required to make predictions)
-#model.compile(loss = 'binary_crossentropy',
-#              optimizer = optimizers.RMSprop(lr = 1e-4),
-#              metrics = ['acc'])
-
 #Predict probabilities
 def predict_fn(images):
     transformed_images = own_rel.transform_img_fn(images)

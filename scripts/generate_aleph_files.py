@@ -33,7 +33,7 @@ ap.add_argument("-s", "--samples", required=False, default=20,
 ap.add_argument("-c", "--checkpoint_dir", required=False,
                 default="../models_to_explain/model.h5", help="Path to checkpoint.")
 ap.add_argument("-k", "--keep", required=False,
-                default=4, help="Number of important superpixels.")
+                default=3, help="Number of important superpixels.")
 ap.add_argument("-t", "--theta", required=False,
                 default=0.9, help="The threshold of the classifier estimator for being a true example.")
 ap.add_argument("-n", "--noise", required=False,
@@ -69,75 +69,16 @@ class Superpixel:
     pass
 
 
-def dissim_sps(sp_mask, original_image):
-    output = []
-    n_superpixels = np.unique(sp_mask).shape[0]
-
-    original_image_mean_r = np.mean(original_image[:, 0])
-    original_image_mean_g = np.mean(original_image[:, 1])
-    original_image_mean_b = np.mean(original_image[:, 2])
-
-    for i in range(n_superpixels):
-        r_sum = np.sum(np.abs(original_image[sp_mask == i][:, 0] - original_image_mean_r))
-        g_sum = np.sum(np.abs(original_image[sp_mask == i][:, 1] - original_image_mean_g))
-        b_sum = np.sum(np.abs(original_image[sp_mask == i][:, 2] - original_image_mean_b))
-
-        mean_sp = (r_sum + g_sum + b_sum) / 3.0 * (1.0/(300*300))
-        output.append(mean_sp)
-
-    return output
-
-
-def dissim(row, dissims):
-    n_superpixels = len(row)
-
-    dissim_image = 1.0 / n_superpixels
-
-    additive = 0.0
-    for i in range(len(row)):
-        if row[i] == 0:
-            additive += dissims[i]
-    dissim_image += additive
-
-    return dissim_image
-
-
 #import model
 model = own_rel.own_rel()
 
 # load weights from checkpoint
 model.load_weights(CHECKPOINT_DIR)
 
-# compile model (required to make predictions)
-# model.compile(loss = 'binary_crossentropy',
-#              optimizer = optimizers.RMSprop(lr = 1e-4),
-#              metrics = ['acc'])
-
-
 def predict_fn(images):
     transformed_images = own_rel.transform_img_fn(images)
     preds = model.predict_proba(np.array(transformed_images))
     return preds
-
-
-def write_example(example_index, superpixels, label, dissim):  # currently not needed
-    # write f or n
-    if label == 1:
-        aleph_f.write("true_class(example_" + str(example_index) + ").\n")
-    else:
-        aleph_n.write("true_class(example_" + str(example_index) + ").\n")
-
-    # write bk
-    # the example is declared as type example
-    aleph_bk.write("example(example_" + str(example_index) + ").\n")
-    #aleph_bk.write("dissim(true_class(example_" + str(example_index) + "), " + str(dissim) + ").\n")
-    for sp in superpixels:  # for now, all superpixels are contained
-        sp_identifier = sp.identifier
-        aleph_bk.write("contains(example_" + str(example_index) + ", sp_" + str(i) + ").\n")
-    # for i in range(len(superpixel_mask)):
-    #	if superpixel_mask[i] == 1:
-    #		aleph_bk.write("contains(example_" + str(example_index) + ", sp_" + str(i) + ").\n")
-
 
 def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, true_class):
     example_index = 1
@@ -209,91 +150,6 @@ def generate_rel_ex_and_bk(image, mask, all_superpixels, important_superpixels, 
             aleph_bk.write(crel_name + "_in_ex" + "(sp_" + str(crel_start) + ", sp_" +
                        str(crel_to) + ", example_" + str(example_index) + ").\n")
 
-
-
-"""
-This function is an adaption of a function from 'https://github.com/marcotcr/lime'.
-Therefore the license for it is given again here and as text file in the folder.
-
-Copyright (c) 2016, Marco Tulio Correia Ribeiro
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
-def data_labels(image, fudged_image, segments, true_class, dissims_single):
-    # print segments
-    n_features = np.unique(segments).shape[0]
-    # print n_features
-    from sklearn.utils import check_random_state
-    random_state = check_random_state(None)
-
-    data = random_state.randint(0, 2, NUM_SAMPLES_LIME_ALEPH *
-                                n_features).reshape((NUM_SAMPLES_LIME_ALEPH, n_features))
-
-    labels = []
-    dissims = []
-    data[0, :] = 1
-    imgs = []
-    num_batches = NUM_SAMPLES_LIME_ALEPH // BATCH_SIZE
-    batch_counter = 1
-    for row in data:
-        temp = copy.deepcopy(image)
-        zeros = np.where(row == 0)[0]
-        mask = np.zeros(segments.shape).astype(bool)
-        for z in zeros:
-            mask[segments == z] = True
-        temp[mask] = fudged_image[mask]
-    # hier muss evtl. das Bild gespeichert werden und dann neu eingelesen und dann erst an die Liste angehängt
-        #io.imsave("rule_image.png", temp)
-        #temp = load_img("rule_image.png", target_size=(IMAGE_SIZE,IMAGE_SIZE))
-        imgs.append(temp)
-        dissims.append(dissim(row, dissims_single))
-        if len(imgs) == BATCH_SIZE:
-            print("Batch " + str(batch_counter) + "/" + str(num_batches))
-            batch_counter += 1
-            preds = predict_fn(np.array(imgs))
-            print(preds)
-            lblTmp = []
-            for p in preds:
-                # print(p[true_class]) #p ist für alle images immer gleich
-                if p[true_class] >= THRESHOLD_TRUE_CLASS:
-                    lblTmp.append(1)
-                else:
-                    lblTmp.append(0)
-            labels.extend(lblTmp)
-            imgs = []
-    if len(imgs) > 0:
-        preds = predict_fn(np.array(imgs))
-        lblTmp = []
-        for p in preds:
-            if p[true_class] >= THRESHOLD_TRUE_CLASS:
-                lblTmp.append(1)
-            else:
-                lblTmp.append(0)
-        labels.extend(lblTmp)
-
-    return data, np.array(labels), dissims
-
-
 ###################
 # START OF SCRIPT #
 ###################
@@ -306,7 +162,6 @@ print("Superpixels in the mask: " + str(n_superpixels))
 
 unique_names = set()
 unique_colors = set()
-unique_manual_relations = set()
 
 # get the superpixel info from the annotation
 tree = parse(ANNOTATION_FILE)
@@ -334,7 +189,7 @@ for sp in root:
     spTmp.coord_y = coord_y
 
     id_as_int = int(identifier[3:])  # get rid of the 'sp_'
-    spTmp.occurrences = np.where(mask == id_as_int)  # TODO correct like this?
+    spTmp.occurrences = np.where(mask == id_as_int)
 
     relations = []
 
@@ -361,13 +216,6 @@ for partner in important_superpixels:
         partner_x = partner.coord_x
         partner_y = partner.coord_y
 
-        # top_of
-        # if reference_y < partner_y:
-        #	rel = Relation()
-        #	rel.name = 'top_of'
-        #	rel.to = partner.identifier
-        #	reference.relations.append(rel)
-
         # on(x,y)
         if np.abs(partner_x-reference_x) < 2.0 and (partner_y - reference_y) > 2.0 and (partner_y - reference_y) < 6.0:
             rel = Relation()
@@ -385,7 +233,6 @@ for partner in important_superpixels:
             reference.relations.append(rel)
 
         
-        # TODO not entirely accurate
         # left_of
         if reference_x < partner_x:
             if (reference_y > (partner_y - (partner_x - reference_x))) and (reference_y < (partner_y + (partner_x - reference_x))):
@@ -461,8 +308,6 @@ aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n"
 aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n")
 aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
 aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
-# aleph_b.write(":- modeb(*, touches_in_ex(+superpixel, #superpixel, +example)).\n")
-# aleph_b.write(":- modeb(*, touches_in_ex(#superpixel, +superpixel, +example)).\n")
 
 # determinations
 aleph_b.write(":- determination(true_class/1, contains/2).\n")
@@ -483,14 +328,6 @@ aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
 aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
 aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
 aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
-#aleph_b.write(":- determination(true_class/1, touches_in_ex/3).\n")
-#aleph_b.write(":- determination(true_class/1, touches_in_ex/3).\n")
-
-
-# manual relations # TODO no manual relations for now, but could be implemented later
-# for rel in unique_manual_relations:
-#	aleph_b.write(":- modeb(*, " + rel + "(+superpixel, +superpixel)).\n")
-#	aleph_b.write(":- determination(true_class/1, " + rel + "/2).\n")
 
 # write settings
 aleph_b.write(":- set(i, 4).\n") #TODO was 3
@@ -501,8 +338,6 @@ aleph_b.write(":- set(minscore, 0).\n")
 aleph_b.write(":- set(verbosity, 0).\n")
 aleph_b.write(":- set(noise, " + str(NOISE) + ").\n")  # maybe not needed because user defined eval fn
 aleph_b.write(":- set(nodes, 10000).\n")
-
-#aleph_b.write(":- consult(\'cost_function.pl\').\n")
 
 aleph_b.write(":- consult(\'sp.bk\').\n")
 
@@ -533,20 +368,7 @@ segmented_image = mark_boundaries(image, mask, color=(0.9, 0.9, 0.0))
 
 true_class = int(root.attrib.get('true-class'))
 
-dissims_single = dissim_sps(mask, image)
-
-
 fudged_image = image.copy()
-
-# for x in range(n_superpixels):
-#	fudged_image[mask == x] = (
-#		np.mean(image[:][:, 0]),
-#		np.mean(image[:][:, 1]),
-#		np.mean(image[:][:, 2]))
-
-# for x in range(n_superpixels):
-#	fudged_image[mask == x] = (0, 0, 0)
-
 
 generate_rel_ex_and_bk(image, mask, superpixels, important_superpixels, true_class)
 
