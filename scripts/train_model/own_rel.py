@@ -33,20 +33,3 @@ def own_rel():
     model.add(Dense(2, activation='softmax'))
     
     return model
-
-#Preprocess image 
-def transform_img_fn(images_raw):
-    trans_images = []
-    for i in images_raw:
-        #io.imshow(i)
-        #io.show()
-        #convert to np array
-        #image = img_to_array(i)
-
-        #reshape to match network default size
-        #image = i.reshape(vgg16.image_size, vgg16.image_size, 3)
-
-        #image = preprocess_input(i)
-
-        trans_images.append(i)
-    return trans_images
