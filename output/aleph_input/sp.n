@@ -1,0 +1,2 @@
+true_class(example_2).
+true_class(example_3).

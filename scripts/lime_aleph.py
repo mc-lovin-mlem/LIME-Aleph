@@ -11,6 +11,8 @@ sys.path.insert(0, parent_dir)
 from skimage import io
 from skimage.io import imshow, show, imsave
 import copy
+from pyswip import Prolog
+
 
 """
 The following two functions are from the stackoverflow post
@@ -312,3 +314,127 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class):
         perturbed_dataset.append(ex)
     
     return perturbed_dataset
+
+def write_aleph_files(annotated_image, perturbed_dataset, output_directory, noise):
+
+    print("Writing the input files for Aleph...")
+
+    os.makedirs(output_directory + "aleph_input/")
+
+    aleph_b = open(output_directory + 'aleph_input/sp.b', 'w')
+    aleph_f = open(output_directory + 'aleph_input/sp.f', 'w')
+    aleph_n = open(output_directory + 'aleph_input/sp.n', 'w')
+    aleph_bk = open(output_directory + 'aleph_input/sp.bk', 'w')
+
+    superpixels = annotated_image.superpixels
+
+    unique_colors = set()
+    for sp in superpixels:
+        unique_colors.add(sp.color)
+    
+    for c in unique_colors:
+        aleph_bk.write("color(" + str(c) + ").\n")
+    
+    # write non example dependent bk of the superpixels
+    for sp in superpixels:
+        aleph_bk.write("superpixel(sp_" + str(sp.id) + ").\n")
+        aleph_bk.write("has_color(sp_" + str(sp.id) + ", " + sp.color + ").\n")
+        aleph_bk.write("has_size(sp_" + str(sp.id) + ", " + str(sp.size) + ").\n")
+
+
+    # write the background knowledge for the perturbation set
+    i = 0
+    for ex in perturbed_dataset:
+        i += 1
+        positive = ex.positive
+        sps = ex.superpixels
+        relations = ex.relations
+
+        if positive:
+            aleph_f.write("true_class(example_" + str(i) + ").\n")
+        else:
+            aleph_n.write("true_class(example_" + str(i) + ").\n")
+
+        for sp in sps:
+            aleph_bk.write("contains(sp_" + str(sp) + ", example_" + str(i) + ").\n")
+
+        for rel in relations:
+            aleph_bk.write(rel.name + "_in_ex" + "(sp_" + str(rel.start) + ", sp_" +
+                    str(rel.to) + ", example_" + str(i) + ").\n")
+
+
+
+
+    
+    # write settings for Aleph
+    aleph_b.write(":- use_module(library(lists)).\n")
+    aleph_b.write(":- modeh(1, true_class(+example)).\n")
+
+    # background rules
+    aleph_b.write("larger(X, Y) :- X > Y.\n")
+    #aleph_b.write("left_of_in_ex(SP1, SP2, Ex) :- left_of(SP1, SP2), contains(Ex, SP1), contains(Ex, SP2).\n")
+    #aleph_b.write("right_of_in_ex(SP1, SP2, Ex) :- right_of(SP1, SP2), contains(Ex, SP1), contains(Ex, SP2).\n")
+    #aleph_b.write("top_of_in_ex(SP1, SP2, Ex) :- top_of(SP1, SP2), contains(Ex, SP1), contains(Ex, SP2).\n")
+    #aleph_b.write("bottom_of_in_ex(SP1, SP2, Ex) :- bottom_of(SP1, SP2), contains(Ex, SP1), contains(Ex, SP2).\n")
+    #aleph_b.write("touches_in_ex(SP1, SP2, Ex) :- touches(SP1, SP2), contains(Ex, SP1), contains(Ex, SP2).\n")
+    #aleph_b.write("touches_in_ex(SP1, SP2, Ex) :- touches(SP2, SP1), contains(Ex, SP1), contains(Ex, SP2).\n")
+
+    # modes
+    aleph_b.write(":- modeb(*, contains(-superpixel, +example)).\n")
+    aleph_b.write("%:- modeb(*, contains(#superpixel, +example)).\n")
+
+    aleph_b.write(":- modeb(*, has_color(+superpixel, #color)).\n")
+    aleph_b.write(":- modeb(*, has_size(+superpixel, -size)).\n")
+    aleph_b.write(":- modeb(*, larger(+size, +size)).\n")
+
+    aleph_b.write("%:- modeb(*, has_name(+superpixel, #name)).\n")
+
+    aleph_b.write(":- modeb(*, on_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, under_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, right_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, right_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
+
+    # determinations
+    aleph_b.write(":- determination(true_class/1, contains/2).\n")
+
+    aleph_b.write(":- determination(true_class/1, has_color/2).\n")
+    aleph_b.write(":- determination(true_class/1, has_size/2).\n")
+    aleph_b.write(":- determination(true_class/1, larger/2).\n")
+
+    aleph_b.write(":- determination(true_class/1, on_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, under_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, left_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, left_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, right_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, right_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
+    aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
+
+    # write settings
+    aleph_b.write(":- set(i, 4).\n") #TODO was 3
+    aleph_b.write(":- set(clauselength, 20).\n")  # TODO change
+    aleph_b.write(":- set(minpos, 2).\n")
+    aleph_b.write(":- set(minscore, 0).\n")
+
+    aleph_b.write(":- set(verbosity, 0).\n")
+    aleph_b.write(":- set(noise, " + str(noise) + ").\n")
+    aleph_b.write(":- set(nodes, 10000).\n")
+
+    aleph_b.write(":- consult(\'sp.bk\').\n")
+
+    aleph_b.close()
+    aleph_f.close()
+    aleph_n.close()
+    aleph_bk.close()
+
+def run_aleph(output_dir):
+    prolog = Prolog()
+    prolog.consult("../sources/aleph/aleph_orig.pl")

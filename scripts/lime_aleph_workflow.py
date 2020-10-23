@@ -69,3 +69,7 @@ for ex in perturbed_dataset:
         print("\t", rel.name)
         print("\t", rel.start)
         print("\t", rel.to)
+
+la.write_aleph_files(annotated_image, perturbed_dataset, OUTPUT_DIR, NOISE)
+
+la.run_aleph(OUTPUT_DIR)
