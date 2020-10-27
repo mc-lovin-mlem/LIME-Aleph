@@ -1,1 +1,0 @@
-load_files("../sources/aleph/aleph_orig.pl").

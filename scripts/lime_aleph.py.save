@@ -333,17 +333,10 @@ def write_aleph_files(annotated_image, perturbed_dataset, output_directory, nois
         unique_colors.add(sp.color)
 
     # suppress warnings for discontiguous predicates
-    aleph_bk.write(":- discontiguous superpixel/1.\n")
-    aleph_bk.write(":- discontiguous has_color/2.\n")
-    aleph_bk.write(":- discontiguous has_size/2.\n")
-    aleph_bk.write(":- discontiguous contains/2.\n")
-    aleph_bk.write(":- discontiguous larger/2.\n")
-    aleph_bk.write(":- discontiguous top_of_in_ex/3.\n")
-    aleph_bk.write(":- discontiguous right_of_in_ex/3.\n")
-    aleph_bk.write(":- discontiguous bottom_of_in_ex/3.\n")
-    aleph_bk.write(":- discontiguous left_of_in_ex/3.\n")
-    aleph_bk.write(":- discontiguous on_in_ex/3.\n")
-    aleph_bk.write(":- discontiguous under_in_ex/3.\n")
+    aleph_bk.write(":- discontiguous superpixel/1.")
+    aleph_bk.write(":- discontiguous has_color/2.
+")
+    aleph_bk.write(":- discontiguous has_size/2.")
     
     for c in unique_colors:
         aleph_bk.write("color(" + str(c) + ").\n")

@@ -1,2 +1,4 @@
 true_class(example_2).
 true_class(example_3).
+true_class(example_4).
+true_class(example_6).
