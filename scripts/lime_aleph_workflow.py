@@ -14,12 +14,12 @@ import lime_aleph as la
 
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", default="../datasets/single_relation/test/pos/pos9000.png", help="Path to the image.")
+ap.add_argument("-i", "--image", default="../datasets/tower/towers_for_experiment/test/pos/pos9002.png", help="Path to the image.")
 ap.add_argument("-s", "--samples", required=False, default=1000, help="Number of samples for LIME.")
-ap.add_argument("-k", "--keep", required=False, default=3, help="Number of important superpixels.")
-ap.add_argument("-c", "--checkpoint_dir", required=False, default="../models_to_explain/model.h5", help="Path to checkpoint.")
+ap.add_argument("-k", "--keep", required=False, default=4, help="Number of important superpixels.")
+ap.add_argument("-c", "--checkpoint_dir", required=False, default="../models_to_explain/model_tower.h5", help="Path to checkpoint.")
 ap.add_argument("-o", "--output_dir", required=False, default="../output/", help="Path to the directory of output files.")
-ap.add_argument("-t", "--theta", required=False, default=0.9, help="The threshold of the classifier estimator for being a true example.")
+ap.add_argument("-t", "--theta", required=False, default=0.8, help="The threshold of the classifier estimator for being a true example.")
 ap.add_argument("-n", "--noise", required=False, default=10, help="Percentage of false positives allowed for Aleph.")
 args = vars(ap.parse_args())
 
@@ -70,6 +70,9 @@ for ex in perturbed_dataset:
         print("\t", rel.start)
         print("\t", rel.to)
 
-la.write_aleph_files(annotated_image, perturbed_dataset, OUTPUT_DIR, NOISE)
+# Write the Aleph files from the background knowledge
+used_relations = None # 'None' if you want to allow all relations, otherwise list with following possibilities: ["left_of", "right_of", "top_of", "bottom_of", "on", "under"]
+la.write_aleph_files(annotated_image, perturbed_dataset, used_relations, OUTPUT_DIR, NOISE)
 
+# Run Aleph and obtain the rules
 la.run_aleph(OUTPUT_DIR)

@@ -8,6 +8,8 @@ larger(X, Y) :- X > Y.
 :- modeb(*, larger(+size, +size)).
 %:- modeb(*, has_name(+superpixel, #name)).
 :- modeb(*, on_in_ex(+superpixel, +superpixel, +example)).
+:- modeb(*, on_in_ex(+superpixel, +superpixel, +example)).
+:- modeb(*, under_in_ex(+superpixel, +superpixel, +example)).
 :- modeb(*, under_in_ex(+superpixel, +superpixel, +example)).
 :- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).
 :- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).
@@ -22,6 +24,8 @@ larger(X, Y) :- X > Y.
 :- determination(true_class/1, has_size/2).
 :- determination(true_class/1, larger/2).
 :- determination(true_class/1, on_in_ex/3).
+:- determination(true_class/1, on_in_ex/3).
+:- determination(true_class/1, under_in_ex/3).
 :- determination(true_class/1, under_in_ex/3).
 :- determination(true_class/1, left_of_in_ex/3).
 :- determination(true_class/1, left_of_in_ex/3).

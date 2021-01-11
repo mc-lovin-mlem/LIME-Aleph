@@ -248,7 +248,7 @@ def get_imp_sps_from_relations(relations):
     
     return imp_sps
 
-def perturb_instance(annotated_image, relations, model, threshold_true_class):
+def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9):
 
     true_class = annotated_image.true_class
     original_image = annotated_image.original_image
@@ -315,7 +315,7 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class):
     
     return perturbed_dataset
 
-def write_aleph_files(annotated_image, perturbed_dataset, output_directory, noise):
+def write_aleph_files(annotated_image, perturbed_dataset, used_relations, output_directory, noise=10):
 
     print("Writing the input files for Aleph...")
 
@@ -377,8 +377,6 @@ def write_aleph_files(annotated_image, perturbed_dataset, output_directory, nois
 
 
 
-
-    
     # write settings for Aleph
     aleph_b.write(":- use_module(library(lists)).\n")
     aleph_b.write(":- modeh(1, true_class(+example)).\n")
@@ -392,42 +390,34 @@ def write_aleph_files(annotated_image, perturbed_dataset, output_directory, nois
 
     aleph_b.write(":- modeb(*, has_color(+superpixel, #color)).\n")
     aleph_b.write(":- modeb(*, has_size(+superpixel, -size)).\n")
-    aleph_b.write(":- modeb(*, larger(+size, +size)).\n")
+
+    if used_relations is None or "larger" in used_relations:
+    	aleph_b.write(":- modeb(*, larger(+size, +size)).\n")
 
     aleph_b.write("%:- modeb(*, has_name(+superpixel, #name)).\n")
 
-    aleph_b.write(":- modeb(*, on_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, under_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, left_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, right_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, right_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, top_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
-    aleph_b.write(":- modeb(*, bottom_of_in_ex(+superpixel, +superpixel, +example)).\n")
+    for r in ["on", "under", "left_of", "right_of", "top_of", "bottom_of"]:
+        if used_relations is None or r in used_relations:
+            aleph_b.write(":- modeb(*, " + r + "_in_ex(+superpixel, +superpixel, +example)).\n")
+            aleph_b.write(":- modeb(*, " + r + "_in_ex(+superpixel, +superpixel, +example)).\n")
 
     # determinations
     aleph_b.write(":- determination(true_class/1, contains/2).\n")
 
     aleph_b.write(":- determination(true_class/1, has_color/2).\n")
     aleph_b.write(":- determination(true_class/1, has_size/2).\n")
-    aleph_b.write(":- determination(true_class/1, larger/2).\n")
+    
+    if used_relations is None or "larger" in used_relations:
+        aleph_b.write(":- determination(true_class/1, larger/2).\n")
 
-    aleph_b.write(":- determination(true_class/1, on_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, under_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, left_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, left_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, right_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, right_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, top_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
-    aleph_b.write(":- determination(true_class/1, bottom_of_in_ex/3).\n")
-
+    for r in ["on", "under", "left_of", "right_of", "top_of", "bottom_of"]:
+        if used_relations is None or r in used_relations:
+            aleph_b.write(":- determination(true_class/1, " + r + "_in_ex/3).\n")
+            aleph_b.write(":- determination(true_class/1, " + r + "_in_ex/3).\n")
+    
     # write settings
-    aleph_b.write(":- set(i, 4).\n") #TODO was 3
-    aleph_b.write(":- set(clauselength, 20).\n")  # TODO change
+    aleph_b.write(":- set(i, 4).\n")
+    aleph_b.write(":- set(clauselength, 20).\n")
     aleph_b.write(":- set(minpos, 2).\n")
     aleph_b.write(":- set(minscore, 0).\n")
 
@@ -444,8 +434,10 @@ def write_aleph_files(annotated_image, perturbed_dataset, output_directory, nois
 
 def run_aleph(output_dir):
     prolog = Prolog()
-    #prolog.consult("./run_aleph.pl")
     prolog.consult("../sources/aleph/aleph_orig.pl")
-    print(list(prolog.query("working_directory(_, \"../output/aleph_input/\")")))
+    print(list(prolog.query("working_directory(_, \"" + output_dir + "/aleph_input/\")")))
     print(list(prolog.query("read_all(sp)")))
     print(list(prolog.query("induce")))
+    print(list(prolog.query("working_directory(_, \"../\")")))
+    print(list(prolog.query("write_rules(\"explanation.txt\")")))
+    print("The explanation was saved to", output_dir)
