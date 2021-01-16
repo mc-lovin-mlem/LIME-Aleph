@@ -3,3 +3,5 @@ webcolors
 lime
 scikit-image
 pyswip
+tensorflow
+matplotlib
