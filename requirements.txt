@@ -1,0 +1,5 @@
+numpy
+webcolors
+lime
+scikit-image
+pyswip
