@@ -151,7 +151,7 @@ def find_important_parts(annotated_image, k=3):
     sps_sorted_by_weight = sorted(annotated_image.superpixels, key=lambda x: np.abs(x.lime_weight), reverse=True)
     weights = [sp.lime_weight for sp in sps_sorted_by_weight]
     min_weight = np.abs(weights[k])
-    print("Min weight: " + str(min_weight))
+    #print("Min weight: " + str(min_weight))
     important_superpixels = [sp for sp in sps_sorted_by_weight if np.abs(sp.lime_weight) > min_weight]
 
     return important_superpixels
@@ -431,6 +431,8 @@ def write_aleph_files(annotated_image, perturbed_dataset, used_relations, output
     aleph_f.close()
     aleph_n.close()
     aleph_bk.close()
+
+    print("Done.")
 
 def run_aleph(output_dir):
     prolog = Prolog()
