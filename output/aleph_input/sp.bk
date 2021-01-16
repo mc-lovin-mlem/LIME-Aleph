@@ -9,10 +9,10 @@
 :- discontiguous left_of_in_ex/3.
 :- discontiguous on_in_ex/3.
 :- discontiguous under_in_ex/3.
-color(mediumblue).
-color(maroon).
 color(lime).
 color(darkturquoise).
+color(maroon).
+color(mediumblue).
 superpixel(sp_44).
 has_color(sp_44, darkturquoise).
 has_size(sp_44, 16).
@@ -22,189 +22,189 @@ has_size(sp_60, 16).
 superpixel(sp_52).
 has_color(sp_52, lime).
 has_size(sp_52, 16).
-superpixel(sp_49).
-has_color(sp_49, maroon).
-has_size(sp_49, 16).
-superpixel(sp_32).
-has_color(sp_32, maroon).
-has_size(sp_32, 16).
-superpixel(sp_51).
-has_color(sp_51, maroon).
-has_size(sp_51, 16).
-superpixel(sp_61).
-has_color(sp_61, maroon).
-has_size(sp_61, 16).
-superpixel(sp_48).
-has_color(sp_48, maroon).
-has_size(sp_48, 16).
-superpixel(sp_30).
-has_color(sp_30, maroon).
-has_size(sp_30, 16).
-superpixel(sp_27).
-has_color(sp_27, maroon).
-has_size(sp_27, 16).
-superpixel(sp_43).
-has_color(sp_43, maroon).
-has_size(sp_43, 16).
-superpixel(sp_14).
-has_color(sp_14, maroon).
-has_size(sp_14, 16).
-superpixel(sp_19).
-has_color(sp_19, maroon).
-has_size(sp_19, 16).
-superpixel(sp_35).
-has_color(sp_35, maroon).
-has_size(sp_35, 16).
-superpixel(sp_62).
-has_color(sp_62, maroon).
-has_size(sp_62, 16).
-superpixel(sp_13).
-has_color(sp_13, maroon).
-has_size(sp_13, 16).
-superpixel(sp_57).
-has_color(sp_57, maroon).
-has_size(sp_57, 16).
-superpixel(sp_15).
-has_color(sp_15, maroon).
-has_size(sp_15, 16).
-superpixel(sp_54).
-has_color(sp_54, maroon).
-has_size(sp_54, 16).
-superpixel(sp_36).
-has_color(sp_36, maroon).
-has_size(sp_36, 16).
-superpixel(sp_45).
-has_color(sp_45, maroon).
-has_size(sp_45, 16).
-superpixel(sp_29).
-has_color(sp_29, maroon).
-has_size(sp_29, 16).
-superpixel(sp_2).
-has_color(sp_2, maroon).
-has_size(sp_2, 16).
-superpixel(sp_53).
-has_color(sp_53, maroon).
-has_size(sp_53, 16).
-superpixel(sp_63).
-has_color(sp_63, maroon).
-has_size(sp_63, 16).
-superpixel(sp_11).
-has_color(sp_11, maroon).
-has_size(sp_11, 16).
-superpixel(sp_21).
-has_color(sp_21, maroon).
-has_size(sp_21, 16).
-superpixel(sp_3).
-has_color(sp_3, maroon).
-has_size(sp_3, 16).
-superpixel(sp_1).
-has_color(sp_1, maroon).
-has_size(sp_1, 16).
-superpixel(sp_46).
-has_color(sp_46, maroon).
-has_size(sp_46, 16).
-superpixel(sp_24).
-has_color(sp_24, maroon).
-has_size(sp_24, 16).
-superpixel(sp_20).
-has_color(sp_20, maroon).
-has_size(sp_20, 16).
-superpixel(sp_39).
-has_color(sp_39, maroon).
-has_size(sp_39, 16).
-superpixel(sp_28).
-has_color(sp_28, maroon).
-has_size(sp_28, 16).
-superpixel(sp_6).
-has_color(sp_6, maroon).
-has_size(sp_6, 16).
-superpixel(sp_41).
-has_color(sp_41, maroon).
-has_size(sp_41, 16).
-superpixel(sp_0).
-has_color(sp_0, maroon).
-has_size(sp_0, 16).
-superpixel(sp_47).
-has_color(sp_47, maroon).
-has_size(sp_47, 16).
-superpixel(sp_42).
-has_color(sp_42, maroon).
-has_size(sp_42, 16).
-superpixel(sp_58).
-has_color(sp_58, maroon).
-has_size(sp_58, 16).
-superpixel(sp_37).
-has_color(sp_37, maroon).
-has_size(sp_37, 16).
-superpixel(sp_56).
-has_color(sp_56, maroon).
-has_size(sp_56, 16).
-superpixel(sp_31).
-has_color(sp_31, maroon).
-has_size(sp_31, 16).
-superpixel(sp_40).
-has_color(sp_40, maroon).
-has_size(sp_40, 16).
-superpixel(sp_7).
-has_color(sp_7, maroon).
-has_size(sp_7, 16).
-superpixel(sp_59).
-has_color(sp_59, maroon).
-has_size(sp_59, 16).
 superpixel(sp_17).
 has_color(sp_17, maroon).
 has_size(sp_17, 16).
-superpixel(sp_4).
-has_color(sp_4, maroon).
-has_size(sp_4, 16).
-superpixel(sp_38).
-has_color(sp_38, maroon).
-has_size(sp_38, 16).
-superpixel(sp_55).
-has_color(sp_55, maroon).
-has_size(sp_55, 16).
-superpixel(sp_25).
-has_color(sp_25, maroon).
-has_size(sp_25, 16).
-superpixel(sp_16).
-has_color(sp_16, maroon).
-has_size(sp_16, 16).
-superpixel(sp_50).
-has_color(sp_50, maroon).
-has_size(sp_50, 16).
+superpixel(sp_3).
+has_color(sp_3, maroon).
+has_size(sp_3, 16).
 superpixel(sp_9).
 has_color(sp_9, maroon).
 has_size(sp_9, 16).
-superpixel(sp_18).
-has_color(sp_18, maroon).
-has_size(sp_18, 16).
-superpixel(sp_34).
-has_color(sp_34, maroon).
-has_size(sp_34, 16).
-superpixel(sp_26).
-has_color(sp_26, maroon).
-has_size(sp_26, 16).
 superpixel(sp_8).
 has_color(sp_8, maroon).
 has_size(sp_8, 16).
-superpixel(sp_33).
-has_color(sp_33, maroon).
-has_size(sp_33, 16).
-superpixel(sp_12).
-has_color(sp_12, maroon).
-has_size(sp_12, 16).
-superpixel(sp_10).
-has_color(sp_10, maroon).
-has_size(sp_10, 16).
-superpixel(sp_23).
-has_color(sp_23, maroon).
-has_size(sp_23, 16).
+superpixel(sp_42).
+has_color(sp_42, maroon).
+has_size(sp_42, 16).
+superpixel(sp_2).
+has_color(sp_2, maroon).
+has_size(sp_2, 16).
 superpixel(sp_22).
 has_color(sp_22, maroon).
 has_size(sp_22, 16).
 superpixel(sp_5).
 has_color(sp_5, maroon).
 has_size(sp_5, 16).
+superpixel(sp_10).
+has_color(sp_10, maroon).
+has_size(sp_10, 16).
+superpixel(sp_20).
+has_color(sp_20, maroon).
+has_size(sp_20, 16).
+superpixel(sp_34).
+has_color(sp_34, maroon).
+has_size(sp_34, 16).
+superpixel(sp_43).
+has_color(sp_43, maroon).
+has_size(sp_43, 16).
+superpixel(sp_45).
+has_color(sp_45, maroon).
+has_size(sp_45, 16).
+superpixel(sp_29).
+has_color(sp_29, maroon).
+has_size(sp_29, 16).
+superpixel(sp_48).
+has_color(sp_48, maroon).
+has_size(sp_48, 16).
+superpixel(sp_50).
+has_color(sp_50, maroon).
+has_size(sp_50, 16).
+superpixel(sp_0).
+has_color(sp_0, maroon).
+has_size(sp_0, 16).
+superpixel(sp_32).
+has_color(sp_32, maroon).
+has_size(sp_32, 16).
+superpixel(sp_38).
+has_color(sp_38, maroon).
+has_size(sp_38, 16).
+superpixel(sp_55).
+has_color(sp_55, maroon).
+has_size(sp_55, 16).
+superpixel(sp_51).
+has_color(sp_51, maroon).
+has_size(sp_51, 16).
+superpixel(sp_49).
+has_color(sp_49, maroon).
+has_size(sp_49, 16).
+superpixel(sp_33).
+has_color(sp_33, maroon).
+has_size(sp_33, 16).
+superpixel(sp_58).
+has_color(sp_58, maroon).
+has_size(sp_58, 16).
+superpixel(sp_23).
+has_color(sp_23, maroon).
+has_size(sp_23, 16).
+superpixel(sp_12).
+has_color(sp_12, maroon).
+has_size(sp_12, 16).
+superpixel(sp_25).
+has_color(sp_25, maroon).
+has_size(sp_25, 16).
+superpixel(sp_1).
+has_color(sp_1, maroon).
+has_size(sp_1, 16).
+superpixel(sp_35).
+has_color(sp_35, maroon).
+has_size(sp_35, 16).
+superpixel(sp_15).
+has_color(sp_15, maroon).
+has_size(sp_15, 16).
+superpixel(sp_30).
+has_color(sp_30, maroon).
+has_size(sp_30, 16).
+superpixel(sp_21).
+has_color(sp_21, maroon).
+has_size(sp_21, 16).
+superpixel(sp_61).
+has_color(sp_61, maroon).
+has_size(sp_61, 16).
+superpixel(sp_14).
+has_color(sp_14, maroon).
+has_size(sp_14, 16).
+superpixel(sp_56).
+has_color(sp_56, maroon).
+has_size(sp_56, 16).
+superpixel(sp_57).
+has_color(sp_57, maroon).
+has_size(sp_57, 16).
+superpixel(sp_41).
+has_color(sp_41, maroon).
+has_size(sp_41, 16).
+superpixel(sp_26).
+has_color(sp_26, maroon).
+has_size(sp_26, 16).
+superpixel(sp_19).
+has_color(sp_19, maroon).
+has_size(sp_19, 16).
+superpixel(sp_31).
+has_color(sp_31, maroon).
+has_size(sp_31, 16).
+superpixel(sp_27).
+has_color(sp_27, maroon).
+has_size(sp_27, 16).
+superpixel(sp_54).
+has_color(sp_54, maroon).
+has_size(sp_54, 16).
+superpixel(sp_53).
+has_color(sp_53, maroon).
+has_size(sp_53, 16).
+superpixel(sp_28).
+has_color(sp_28, maroon).
+has_size(sp_28, 16).
+superpixel(sp_24).
+has_color(sp_24, maroon).
+has_size(sp_24, 16).
+superpixel(sp_36).
+has_color(sp_36, maroon).
+has_size(sp_36, 16).
+superpixel(sp_40).
+has_color(sp_40, maroon).
+has_size(sp_40, 16).
+superpixel(sp_39).
+has_color(sp_39, maroon).
+has_size(sp_39, 16).
+superpixel(sp_16).
+has_color(sp_16, maroon).
+has_size(sp_16, 16).
+superpixel(sp_63).
+has_color(sp_63, maroon).
+has_size(sp_63, 16).
+superpixel(sp_37).
+has_color(sp_37, maroon).
+has_size(sp_37, 16).
+superpixel(sp_11).
+has_color(sp_11, maroon).
+has_size(sp_11, 16).
+superpixel(sp_4).
+has_color(sp_4, maroon).
+has_size(sp_4, 16).
+superpixel(sp_6).
+has_color(sp_6, maroon).
+has_size(sp_6, 16).
+superpixel(sp_59).
+has_color(sp_59, maroon).
+has_size(sp_59, 16).
+superpixel(sp_62).
+has_color(sp_62, maroon).
+has_size(sp_62, 16).
+superpixel(sp_18).
+has_color(sp_18, maroon).
+has_size(sp_18, 16).
+superpixel(sp_47).
+has_color(sp_47, maroon).
+has_size(sp_47, 16).
+superpixel(sp_13).
+has_color(sp_13, maroon).
+has_size(sp_13, 16).
+superpixel(sp_46).
+has_color(sp_46, maroon).
+has_size(sp_46, 16).
+superpixel(sp_7).
+has_color(sp_7, maroon).
+has_size(sp_7, 16).
 contains(sp_60, example_1).
 contains(sp_44, example_1).
 contains(sp_52, example_1).
