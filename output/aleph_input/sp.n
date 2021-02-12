@@ -2,5 +2,11 @@ true_class(example_2).
 true_class(example_5).
 true_class(example_6).
 true_class(example_7).
-true_class(example_10).
-true_class(example_11).
+true_class(example_8).
+true_class(example_9).
+true_class(example_12).
+true_class(example_13).
+true_class(example_14).
+true_class(example_15).
+true_class(example_16).
+true_class(example_17).

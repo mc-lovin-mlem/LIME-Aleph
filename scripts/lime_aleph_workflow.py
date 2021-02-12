@@ -10,7 +10,7 @@ from skimage import io
 from skimage.io import imshow, show, imsave
 import shutil
 
-import lime_aleph as la
+from lime_aleph import lime_aleph as la
 
 
 ap = argparse.ArgumentParser()

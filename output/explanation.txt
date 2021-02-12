@@ -1,2 +1,3 @@
 true_class(A) :-
-   contains(B,A), contains(C,A), has_color(C,lime), on_in_ex(C,B,A).
+   contains(B,A), has_color(B,mediumblue), contains(C,A), has_color(C,darkturquoise), 
+   top_of_in_ex(C,B,A).
