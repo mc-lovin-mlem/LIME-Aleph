@@ -1,8 +1,10 @@
-numpy
-webcolors
-lime
-scikit-image
-pyswip
-tensorflow
-matplotlib
+numpy==1.19.5
+webcolors==1.11.1
+lime==0.2.0.1
+scikit-image==0.18.1
+pyswip==0.2.10
+tensorflow==2.4.1
+keras==2.4.3
+matplotlib==3.3.4
 opencv-python==4.5.1.48
+graphviz==0.16

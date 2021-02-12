@@ -10,6 +10,7 @@ from skimage import io
 from skimage.io import imshow, show, imsave
 import shutil
 import cv2
+from graphviz import Digraph
 
 from lime_aleph import lime_aleph as la
 
@@ -51,18 +52,19 @@ annotated_image = la.annotate_image_parts(image, model, OUTPUT_DIR, NUM_SAMPLES_
 
 # get the list of the important superpixels
 important_superpixels, labeled_image = la.find_important_parts(annotated_image, N_KEEP)
-   
+
 # Displaying the labeled image 
 io.imshow(labeled_image)
 io.show()
 
 # find the spatial relations between them
-relations = la.find_spatial_relations(important_superpixels)
+relations, graph = la.find_spatial_relations(important_superpixels)
 
 for rel in relations:
-    print("Name:", rel.name)
-    print("Start:", rel.start)
-    print("To:", rel.to)
+    print(rel)
+
+graph.render('relations-graph.gv', view=True)
+
 
 # Build the dataset of perturbed versions of the image
 perturbed_dataset = la.perturb_instance(annotated_image, relations, model, THRESHOLD_TRUE_CLASS)

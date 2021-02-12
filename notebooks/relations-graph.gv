@@ -1,0 +1,23 @@
+// Graph of spatial relations
+digraph {
+	44 [label=44]
+	60 [label=60]
+	52 [label=52]
+	28 [label=28]
+	60 -> 44 [label=bottom_of]
+	52 -> 44 [label=under]
+	52 -> 44 [label=bottom_of]
+	28 -> 44 [label=top_of]
+	44 -> 60 [label=top_of]
+	52 -> 60 [label=on]
+	52 -> 60 [label=top_of]
+	28 -> 60 [label=top_of]
+	44 -> 52 [label=on]
+	44 -> 52 [label=top_of]
+	60 -> 52 [label=under]
+	60 -> 52 [label=bottom_of]
+	28 -> 52 [label=top_of]
+	44 -> 28 [label=bottom_of]
+	60 -> 28 [label=bottom_of]
+	52 -> 28 [label=bottom_of]
+}

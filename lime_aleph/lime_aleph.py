@@ -14,6 +14,7 @@ from skimage import transform
 import copy
 from pyswip import Prolog
 import cv2
+from graphviz import Digraph
 
 
 """
@@ -244,8 +245,17 @@ def find_spatial_relations(important_superpixels):
                     rel.start = reference.id
                     rel.to = partner.id
                     relations.append(rel)
+
+    dot = Digraph(comment='Graph of spatial relations')
+    for s in important_superpixels:
+        dot.node(str(s.id), str(s.id))
     
-    return relations
+    for r in relations:
+        dot.edge(str(r.start), str(r.to), label=str(r.name))
+
+    print(dot.source)
+    
+    return relations, dot
 
 def get_imp_sps_from_relations(relations):
 
