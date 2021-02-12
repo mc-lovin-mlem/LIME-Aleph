@@ -5,3 +5,4 @@ scikit-image
 pyswip
 tensorflow
 matplotlib
+opencv-python==4.5.1.48

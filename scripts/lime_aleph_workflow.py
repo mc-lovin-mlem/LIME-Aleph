@@ -9,6 +9,7 @@ sys.path.insert(0, parent_dir)
 from skimage import io
 from skimage.io import imshow, show, imsave
 import shutil
+import cv2
 
 from lime_aleph import lime_aleph as la
 
@@ -49,7 +50,11 @@ model.load_weights(CHECKPOINT_DIR)
 annotated_image = la.annotate_image_parts(image, model, OUTPUT_DIR, NUM_SAMPLES_LIME)
 
 # get the list of the important superpixels
-important_superpixels = la.find_important_parts(annotated_image, N_KEEP)
+important_superpixels, labeled_image = la.find_important_parts(annotated_image, N_KEEP)
+   
+# Displaying the labeled image 
+io.imshow(labeled_image)
+io.show()
 
 # find the spatial relations between them
 relations = la.find_spatial_relations(important_superpixels)

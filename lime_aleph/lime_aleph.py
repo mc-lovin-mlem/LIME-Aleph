@@ -10,8 +10,10 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 from skimage import io
 from skimage.io import imshow, show, imsave
+from skimage import transform
 import copy
 from pyswip import Prolog
+import cv2
 
 
 """
@@ -42,10 +44,12 @@ class Image:
     pass
 
 class Superpixel:
-    pass
+    def __str__(self):
+        return "Superpixel: ID: " + str(self.id) + ", Color: " + str(self.color) + ", X-Coord: " + str(self.x_coord) + ", Y-Coord: " + str(self.y_coord) + ", Importance: " + str(self.lime_weight)
 
 class Relation:
-    pass
+    def __str__(self):
+        return "Relation: " + str(self.start) + " -- " + str(self.name) + " --> " + str(self.to)
 
 # predicted_class
 # image
@@ -66,8 +70,8 @@ def annotate_image_parts(image, model, output_directory, n_lime_samples=1000):
     print("True class of the image is: ", true_class)
 
     # the softmax output for the two classes:
-    print("Negative estimator:", predictions[0])
-    print("Positive estimator:", predictions[1])
+    #print("Negative estimator:", predictions[0])
+    #print("Positive estimator:", predictions[1])
 
     annotated_image = Image()
     annotated_image.true_class = true_class
@@ -76,14 +80,16 @@ def annotate_image_parts(image, model, output_directory, n_lime_samples=1000):
     annotated_image.original_image = image
 
     explainer = lime_image.LimeImageExplainer(verbose=True)
-    print('Starting the explanation generation process. This may take several minutes. Seriously. Grab a cup of coffee.')
+    print('Starting the explanation generation process. This may take a while.')
     sf = SegmentationAlgorithm('quadratic', n_quads=8) # our own segmentation algorithm. A uniform grid.
     tmp = time.time()
     explanation = explainer.explain_instance(image, model.predict_proba, segmentation_fn=sf, top_labels=2, num_samples=n_lime_samples, hide_color=0)
-    print("Elapsed time: " + str(time.time() - tmp))
+    #print("Elapsed time: " + str(time.time() - tmp))
 
     lime_output, lime_mask = explanation.get_image_and_mask(true_class, positive_only=True, hide_rest=True)
     io.imsave(output_directory + "lime_output.png", mark_boundaries(lime_output, lime_mask))
+
+    annotated_image.explanation = explanation
 
     # Beware: Only applicable to binary tasks
     counter_class = -1
@@ -143,6 +149,7 @@ def annotate_image_parts(image, model, output_directory, n_lime_samples=1000):
     # save sp integer mask
     np.save(output_directory + "sp_mask.npy", segments)
 
+
     return annotated_image
 
 def find_important_parts(annotated_image, k=3):
@@ -154,7 +161,14 @@ def find_important_parts(annotated_image, k=3):
     #print("Min weight: " + str(min_weight))
     important_superpixels = [sp for sp in sps_sorted_by_weight if np.abs(sp.lime_weight) > min_weight]
 
-    return important_superpixels
+    # Retrieve showable representations
+    img = transform.resize(annotated_image.original_image, (annotated_image.original_image.shape[0] * 6, annotated_image.original_image.shape[1] * 6),
+                           anti_aliasing=False)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    for sp in important_superpixels:
+        img = cv2.putText(img,str(sp.id),(int(sp.x_coord*6),int(sp.y_coord*6)), font, 0.5, (255,255,255), 1)
+
+    return important_superpixels, img
 
 def find_spatial_relations(important_superpixels):
 
@@ -163,7 +177,7 @@ def find_spatial_relations(important_superpixels):
     relations = []
 
     for partner in important_superpixels:
-        print("Currently at superpixel", partner.id)
+        #print("Currently at superpixel", partner.id)
         for reference in important_superpixels:
             if reference.id == partner.id:
                 continue
