@@ -57,7 +57,17 @@ class Relation:
 # superpixels
 # relations
 class PerturbedExample:
-    pass
+    def __str__(self):
+
+        sp_string = str(self.superpixels[0].id) + ', '
+        for p in self.superpixels[1:]:
+            sp_string += str(p.id) + ',\n'
+        
+        rel_string = str(self.relations[0]) + '\n'
+        for r in self.relations[1:]:
+            rel_string += ', ' + str(r) + '\n'
+
+        return "Example: Positive: " + str(self.positive) + ",\nSuperpixels:\n" + sp_string + "\nRelations:\n" + rel_string
 
 def annotate_image_parts(image, model, output_directory, n_lime_samples=1000):
 
