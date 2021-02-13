@@ -26,10 +26,11 @@ ap.add_argument("-n", "--noise", required=False, default=10, help="Percentage of
 args = vars(ap.parse_args())
 
 
+
 NUM_SAMPLES_LIME = int(args['samples'])
 N_KEEP = int(args['keep'])
 CHECKPOINT_DIR = str(args['checkpoint_dir'])
-OUTPUT_DIR = str(args['output_dir'])
+OUTPUT_DIR = os.path.abspath(str(args['output_dir'])) + "/"
 THRESHOLD_TRUE_CLASS = float(args['theta'])
 NOISE = int(args['noise'])
 
@@ -38,7 +39,9 @@ shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 os.makedirs(OUTPUT_DIR)
 
 # load in and resize original image to match network default size
-image = img_as_float32(io.imread(args["image"]))
+
+image_filepath = os.path.abspath(args["image"])
+image = img_as_float32(io.imread(image_filepath))
 image = resize(image, (own_rel.IMAGE_SIZE, own_rel.IMAGE_SIZE), anti_aliasing=True)
 
 # import model

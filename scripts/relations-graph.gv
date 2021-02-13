@@ -1,9 +1,23 @@
-// The Round Table
+// Graph of spatial relations
 digraph {
-	A [label="King Arthur"]
-	B [label="Sir Bedevere the Wise"]
-	L [label="Sir Lancelot the Brave"]
-	A -> B
-	A -> L
-	B -> L [constraint=false]
+	46 [label=46]
+	62 [label=62]
+	54 [label=54]
+	12 [label=12]
+	62 -> 46 [label=bottom_of]
+	54 -> 46 [label=under]
+	54 -> 46 [label=bottom_of]
+	12 -> 46 [label=top_of]
+	46 -> 62 [label=top_of]
+	54 -> 62 [label=on]
+	54 -> 62 [label=top_of]
+	12 -> 62 [label=top_of]
+	46 -> 54 [label=on]
+	46 -> 54 [label=top_of]
+	62 -> 54 [label=under]
+	62 -> 54 [label=bottom_of]
+	12 -> 54 [label=top_of]
+	46 -> 12 [label=bottom_of]
+	62 -> 12 [label=bottom_of]
+	54 -> 12 [label=bottom_of]
 }

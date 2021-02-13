@@ -58,10 +58,9 @@ class Relation:
 # relations
 class PerturbedExample:
     def __str__(self):
-
-        sp_string = str(self.superpixels[0].id) + ', '
+        sp_string = str(self.superpixels[0]) + ', '
         for p in self.superpixels[1:]:
-            sp_string += str(p.id) + ',\n'
+            sp_string += str(p) + ',\n'
         
         rel_string = str(self.relations[0]) + '\n'
         for r in self.relations[1:]:
@@ -353,7 +352,8 @@ def write_aleph_files(annotated_image, perturbed_dataset, used_relations, output
 
     print("Writing the input files for Aleph...")
 
-    os.makedirs(output_directory + "aleph_input/")
+    print(output_directory)
+    os.makedirs(output_directory + "aleph_input/", exist_ok=True)
 
     aleph_b = open(output_directory + 'aleph_input/sp.b', 'w')
     aleph_f = open(output_directory + 'aleph_input/sp.f', 'w')
