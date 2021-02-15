@@ -255,16 +255,20 @@ def find_spatial_relations(important_superpixels):
                     rel.to = partner.id
                     relations.append(rel)
 
-    dot = Digraph(comment='Graph of spatial relations')
+    dot = draw_graphviz_from_relations(important_superpixels, relations)
+   
+    return relations, dot
+
+
+def draw_graphviz_from_relations(important_superpixels, relations, label="Graph of spatial relations"):
+    dot = Digraph(comment=label)
     for s in important_superpixels:
         dot.node(str(s.id), str(s.id))
     
     for r in relations:
         dot.edge(str(r.start), str(r.to), label=str(r.name))
 
-    print(dot.source)
-    
-    return relations, dot
+    return dot
 
 def get_imp_sps_from_relations(relations):
 
