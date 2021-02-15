@@ -321,6 +321,7 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9
     for sp in important_superpixels_with_location.keys():
         img = cv2.putText(img,str(sp),(int(important_superpixels_with_location[sp][0]*6),int(important_superpixels_with_location[sp][1]*6)), font, 0.5, (255,255,255), 1)
     ex.labeled_image = img
+    ex.graph = draw_graphviz_from_relations(important_superpixels, ex.relations)
 
     perturbed_dataset.append(ex)
 
@@ -381,6 +382,8 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9
             new_rel.to = crel_to
             new_relations.append(new_rel)
         ex.relations = new_relations
+
+        ex.graph = draw_graphviz_from_relations(important_superpixels, ex.relations)
 
         perturbed_dataset.append(ex)
     
