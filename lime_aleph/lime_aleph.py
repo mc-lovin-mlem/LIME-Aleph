@@ -254,8 +254,16 @@ def find_spatial_relations(important_superpixels):
                     rel.start = reference.id
                     rel.to = partner.id
                     relations.append(rel)
-
-    dot = draw_graphviz_from_relations(important_superpixels, relations)
+                    
+    dot = Digraph(comment="Graph of spatial relations")
+    for s in important_superpixels:
+        dot.node(str(s.id), str(s.id), color=s.color)
+        #dot.add_node(str(s),color=s.color)
+    
+    for r in relations:
+        dot.edge(str(r.start), str(r.to), label=str(r.name))
+        
+    #dot = draw_graphviz_from_relations(important_superpixels, relations)
    
     return relations, dot
 
@@ -263,7 +271,7 @@ def find_spatial_relations(important_superpixels):
 def draw_graphviz_from_relations(important_superpixels, relations, label="Graph of spatial relations"):
     dot = Digraph(comment=label)
     for s in important_superpixels:
-        dot.node(str(s.id), str(s.id))
+        dot.node(str(s), str(s))
     
     for r in relations:
         dot.edge(str(r.start), str(r.to), label=str(r.name))
