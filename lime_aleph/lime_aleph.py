@@ -50,7 +50,7 @@ class Superpixel:
 
 class Relation:
     def __str__(self):
-        return "Relation: " + str(self.start) + " -- " + str(self.name) + " --> " + str(self.to)
+        return "Relation: " + str(self.start) + "--" + str(self.name) + "-->" + str(self.to)
 
 # predicted_class
 # image
@@ -300,8 +300,23 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9
     # the original image is always part of the perturbation dataset    
     ex = PerturbedExample()
     ex.positive = p[true_class] >= threshold_true_class
+    important_superpixels_with_location = dict()
+    for sp in important_superpixels:
+        for spi in annotated_image.superpixels:
+            if spi.id == sp:
+                important_superpixels_with_location[sp] = [spi.x_coord, spi.y_coord]
+
     ex.superpixels = important_superpixels
     ex.relations = relations
+    ex.image = copy.deepcopy(original_image)
+
+    img = transform.resize(ex.image, (ex.image.shape[0] * 6, ex.image.shape[1] * 6),
+                            anti_aliasing=False)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    for sp in important_superpixels_with_location.keys():
+        img = cv2.putText(img,str(sp),(int(important_superpixels_with_location[sp][0]*6),int(important_superpixels_with_location[sp][1]*6)), font, 0.5, (255,255,255), 1)
+    ex.labeled_image = img
+
     perturbed_dataset.append(ex)
 
     for rel in relations:
@@ -311,6 +326,11 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9
         tmp_image = copy.deepcopy(original_image)
 
         ex = PerturbedExample()
+        ispwl = copy.deepcopy(important_superpixels_with_location)
+        temp_save = ispwl[int(rel_start)]
+        ispwl[int(rel_start)] = ispwl[int(rel_to)]
+        ispwl[int(rel_to)] = temp_save
+        
         ex.superpixels = important_superpixels
 
         # flip superpixels
@@ -322,6 +342,15 @@ def perturb_instance(annotated_image, relations, model, threshold_true_class=0.9
         tmp_image[rr1, cc1] = values2
 
         preds = model.predict_proba(np.array([tmp_image]))
+        ex.image = copy.deepcopy(tmp_image)
+
+        img = transform.resize(ex.image, (ex.image.shape[0] * 6, ex.image.shape[1] * 6),
+                            anti_aliasing=False)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        for sp in ispwl:
+            img = cv2.putText(img,str(sp),(int(ispwl[sp][0]*6),int(ispwl[sp][1]*6)), font, 0.5, (255,255,255), 1)
+        ex.labeled_image = img
+
         p = preds[0]
         ex.positive = p[true_class] >= threshold_true_class
 
